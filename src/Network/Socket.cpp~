@@ -11,7 +11,7 @@ Socket::~Socket {
     WSACleanup();
 };
 
-int Socket::init() {
+bool Socket::initialize() {
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
         std::cerr << "[ERROR] WSAStartup failed: " << WSAGetLastError() << "\n";
@@ -27,7 +27,7 @@ int Socket::init() {
     return true;
 }
 
-int Socket::bind(const std::string& address, uint16_t port) {
+bool Socket::bind(const std::string& address, uint16_t port) {
     sockaddr_in service{};
     service.sin_family = AF_INET;
     service.sin_addr.s_addr = inet_addr(address.c_str());
@@ -41,7 +41,7 @@ int Socket::bind(const std::string& address, uint16_t port) {
     return true;
 }
 
-int Socket::listen(int backlog) {
+bool Socket::listen(int backlog) {
     if (::listen(m_socket, backlog) == SOCKET_ERROR) {
         std::cerr << "[ERROR] listen() failed: " << WSAGetLastError() << "\n";
         return false;
