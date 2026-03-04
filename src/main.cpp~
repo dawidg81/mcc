@@ -1,5 +1,4 @@
 #include "Core/Logger.hpp"
-#include "Network/Socket.hpp"
 
 #include <winsock.h>
 
@@ -9,6 +8,12 @@
 using namespace std;
 
 Logger log;
+
+class Network
+{
+public:
+	
+};
 
 int main() {
 	log.raw("mcc v0.0.0");
