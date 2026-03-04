@@ -1,45 +1,51 @@
 #include "Socket.hpp"
 
-class Socket
+sockaddr_in service;
+int Socket::winInit()
+
 {
-private:
-	Logger log;
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        log.err("Network.Socket.winInit: Initialization error");
+        return 1;
+    }
+    log.info("Network.Socket.winInit: WSA initialized");
 
-public:
-	int winInit()
-	{
-		WSADATA wsaData;
-		int result = WSAStartup( MAKEWORD(2, 2), & wsaData );
-		if (result != 0) log.err("Network.Socket.winInit: Initialization error");
+    mainSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (mainSocket == INVALID_SOCKET) {
+        log.err("Network.Socket.winInit: Error creating socket: " + std::to_string(WSAGetLastError()));
+        WSACleanup();
+        return 1;
+    }
+    log.info("Network.Socket.winInit: Socket created");
 
-		log.info("Network.Socket.winInit: Socket initialized");
+    memset(&service, 0, sizeof(service));
+    service.sin_family = AF_INET;
+    service.sin_addr.s_addr = inet_addr(NET_SOCK_ADDR);
+    service.sin_port = htons(NET_SOCK_PORT);
 
-		SOCKET mainSocket = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
-		if (mainSocket == INVALID_SOCKET) {
-			log.err("Network.Socket.winInit: Fatal error: Error creating socket");
-			log.err(WSAGetLastError());
-			WSACleanup();
-			return 1;
-		}
+    
+    return 0;
+}
 
-		log.info("Network.Socket.winInit: Socket created");
+int Socket::winBind()
+{
+	if (bind(mainSocket, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR) {
+        log.err("Network.Socket.winInit: Bind failed: " + std::to_string(WSAGetLastError()));
+        closesocket(mainSocket);
+        return 1;
+    }
+	return 0;
+}
 
-		sockaddr_in service;
-		memset( & service, 0, sizeof(service) );
-		service.sin_family = AF_INET;
-		service.sin_addr.s_addr = inet_addr(NET_SOCK_ADDR);
-		service.sin_port = htons(NET_SOCK_PORT);
+int Socket::winListen()
+{
+	if (listen(mainSocket, SOMAXCONN) == SOCKET_ERROR) {
+        log.err("Network.Socket.winInit: Listen failed: " + std::to_string(WSAGetLastError()));
+        closesocket(mainSocket);
+        return 1;
+    }
 
-		log.info("Network.Socket.winInit: Socket configured");
-
-		if (bind(mainSocket, (SOCKADDR *) & service, sizeof(service)) == SOCKET_ERROR ) {
-			log.err("Network.Socket.winInit: Fatal error: Bind failed");
-			closesocket(mainSocket);
-			return 1;
-		}
-
-		log.info("Network.Socket.winInit: Socket bound to address " + NET_SOCK_ADDR + " on port " + string to_string(NET_SOCK_PORT) + ". Ready to listen for connections");
-
-		return 0;
-	}
-};
+    log.info("Network.Socket.winInit: Listening on " + std::string(NET_SOCK_ADDR) + ":" + std::to_string(NET_SOCK_PORT));
+	return 0;
+}
