@@ -1,5 +1,5 @@
-#include "Core/Logger.hpp"
-#include "Network/Socket.hpp"
+#include "Logger.hpp"
+#include "Socket.hpp"
 
 #include <winsock.h>
 
