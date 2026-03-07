@@ -1,6 +1,6 @@
 #pragma once
 #include <winsock2.h>
-#include "../Core/Logger.hpp"
+#include "Logger.hpp"
 
 #define NET_SOCK_ADDR "0.0.0.0"
 #define NET_SOCK_PORT 25565
