@@ -1,36 +1,14 @@
-CXX      := g++
-CXXFLAGS := -std=c++17 -Wall -Wextra
-LDFLAGS  := -lpthread
-
-ifeq ($(OS), Windows_NT)
-    LDFLAGS += -lws2_32
-    TARGET  := mcc.exe
-else
-    TARGET  := mcc
-endif
-
-BUILD_DIR := build
-SRC_DIR   := src
-
-SRCS := $(SRC_DIR)/main.cpp \
-        $(SRC_DIR)/Logger.cpp \
-        $(SRC_DIR)/Socket.cpp
-
-OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))
-
-INCLUDES := -I$(SRC_DIR)/Logger.hpp \
-            -I$(SRC_DIR)/Socket.hpp
-
 .PHONY: all clean
 
-all: $(TARGET)
+all: mcc
 
-$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
+mcc: build/*.o
+	g++ build/*.o -o mcc -lpthread -lws2_32
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+build/%.o: src/%.cpp
+	mkdir -p build
+	g++ -c src/*.cpp -o build/
 
 clean:
-	rm -rf $(BUILD_DIR) $(TARGET)
+	rm build
+	rm mcc.exe
