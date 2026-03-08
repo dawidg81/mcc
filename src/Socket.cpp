@@ -55,7 +55,7 @@ SOCKET Socket::winAccept(){
 		SOCKET clientSocket = accept(mainSocket, NULL, NULL);
 		if(clientSocket == INVALID_SOCKET){
 			log.err("Accept failed: " + std::to_string(WSAGetLastError()));
-			continue;
+			return INVALID_SOCKET;
 		}
 		log.info("Client connected");
 		return clientSocket;
