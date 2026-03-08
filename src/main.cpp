@@ -2,7 +2,6 @@
 #include "Socket.hpp"
 
 #include <winsock.h>
-#include <thread>
 
 using namespace std;
 
