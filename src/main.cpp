@@ -21,7 +21,7 @@ int main() {
 		/*
 		 * RECEIVING CLIENT PACKET
 		 * 1. Receive raw bytes
-		 * 2. Parse bytes into packet
+		 * 2. Parse bytes from packet
 		 * 3. Put into components understandable for server
 		 */
 	}
