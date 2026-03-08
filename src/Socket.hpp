@@ -8,15 +8,17 @@
 class Socket
 {
 private:
-    Logger log;
-    SOCKET mainSocket = INVALID_SOCKET;
+	Logger log;
+	SOCKET mainSocket = INVALID_SOCKET;
 
 public:
 	int pInit();
 	int pBind();
 	int pListen();
+	int pAccept();
 
 	int winInit();
 	int winBind();
 	int winListen();
+	int winAccept();
 };
