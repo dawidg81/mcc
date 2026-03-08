@@ -18,6 +18,12 @@ int main() {
 	while(socket.running){
 		SOCKET clientSocket = socket.winAccept();
 		if(clientSocket == INVALID_SOCKET) continue;
+		/*
+		 * RECEIVING CLIENT PACKET
+		 * 1. Receive raw bytes
+		 * 2. Parse bytes into packet
+		 * 3. Put into components understandable for server
+		 */
 	}
 
 	return 0;
