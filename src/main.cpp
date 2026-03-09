@@ -2,6 +2,7 @@
 #include "Socket.hpp"
 
 #include <winsock2.h>
+#include <string>
 
 using namespace std;
 
@@ -25,9 +26,19 @@ int main() {
 		 * 2. Parse bytes from packet, put into components understandable for server.
 		 */
 		char buffer[131] = {};
-		buffer[0] = recv(clientSocket, buffer, sizeof(buffer), 0);
+		int bytesRecv = recv(clientSocket, buffer, sizeof(buffer), 0);
+
+		if(bytesRecv <= 0){
+			log.err("No bytes received");
+			closesocket(clientSocket);
+			return 1;
+		}
+
 		uint8_t packID = buffer[0];
-		uint8_t protVer = buffer [1];
+		uint8_t protVer = buffer[1];
+		string username; username.assign(buffer + 2, 64);
+		string verKey; verKey.assign(buffer + 66, 64);
+		uint8_t unused = buffer[130];
 	}
 
 	return 0;
