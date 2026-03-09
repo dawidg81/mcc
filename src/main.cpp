@@ -39,6 +39,8 @@ int main() {
 		string username; username.assign(buffer + 2, 64);
 		string verKey; verKey.assign(buffer + 66, 64);
 		uint8_t unused = buffer[130];
+
+		log.info(username + " connected");
 	}
 
 	return 0;
