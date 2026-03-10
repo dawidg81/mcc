@@ -8,7 +8,7 @@ mcc (MineCraftC) is a Minecraft Classic server software.
     - [x] Logger
 
 - [ ] Network
-    - [ ] Socketer
+    - [x] Socketer
     - [ ] Threader
     - [ ] Packeter
 

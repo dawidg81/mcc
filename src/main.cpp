@@ -96,6 +96,8 @@ int main() {
 		// Level initialization (just to debug server id packet)
 		char levelinitbuff = 0x02;
 		send(clientSocket, &levelinitbuff, sizeof(levelinitbuff), 0);
+
+		// delete player;
 	}
 
 	return 0;
