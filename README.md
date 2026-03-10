@@ -5,9 +5,9 @@ mcc (MineCraftC) is a Minecraft Classic server software.
 # Contributing
 
 Any help with the project is highly appreciated.
-If you want to become a contributor, mail to dawidg811@hotmail.com
+If you want to become a contributor, let me know.
 
-I'll try to get into my outlook inbox and try to read your message.
+I will try to setup e mail inbox.
 
 ## TODO
 
