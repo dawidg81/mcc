@@ -36,7 +36,7 @@ public:
 		int total = 0;
 
 		while(total < 131){
-			int bytesRecv = recv(socket, buffer, sizeof(buffer), 0);
+			int bytesRecv = recv(socket, buffer + total, 131 - total, 0);
 			if(bytesRecv <= 0){
 				log.err("Broken pipe");
 				closesocket(socket);
