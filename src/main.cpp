@@ -95,16 +95,28 @@ public:
 		vector<uint8_t> compressed(compressedSize);
 
 		z_stream zs = {};
-		deflateInit2(&zs, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 15 + 16, 8, Z_DEFAULT_STRATEGY);
-		zs.next_in = levelData.data();
-		zs.avail_in = levelData.size();
-		zs.next_out = compressed.data();
-		zs.avail_out = compressedSize;
+		int ret = deflateInit2(&zs, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 15 + 16, 8, Z_DEFAULT_STRATEGY);
+		if(ret != Z_OK){
+			log.err("Deflating failed: " + to_string(ret));
+			return;
+		}
 
-		deflate(&zs, Z_FINISH);
+		zs.next_in = levelData.data();
+		zs.avail_in = (uInt)levelData.size();
+		zs.next_out = compressed.data();
+		zs.avail_out = (uInt)compressedSize;
+
+		ret = deflate(&zs, Z_FINISH);
+		if(ret != Z_STREAM_END){
+			log.err("Deflating did not finish: " + to_string(ret));
+			deflateEnd(&zs);
+			return;
+		}
 		compressedSize = zs.total_out;
 		deflateEnd(&zs);
 		compressed.resize(compressedSize);
+		log.info("Compr. size: " + to_string(compressedSize));
+		log.info("Chunks to send: " + to_string((compressedSize + 1023) / 1024));
 
 		// SEND PACKETS
 		uint8_t initPacket = 0x02;
@@ -114,7 +126,7 @@ public:
 		size_t totalSize = compressed.size();
 
 		while(offset < totalSize){
-			char chunkPacket[1027] = {};
+			char chunkPacket[1028] = {};
 			size_t chunkLen = min((size_t)1024, totalSize - offset);
 			uint8_t percent = (uint8_t)((offset + chunkLen) * 100 / totalSize);
 
@@ -122,9 +134,9 @@ public:
 			chunkPacket[1] = (chunkLen >> 8) & 0xFF;
 			chunkPacket[2] = chunkLen & 0xFF;
 			memcpy(chunkPacket + 3, compressed.data() + offset, chunkLen);
-			chunkPacket[1026] = (char)percent;
+			chunkPacket[1027] = (char)percent;
 
-			send(socket, chunkPacket, 1027, 0);
+			send(socket, chunkPacket, 1028, 0);
 			offset += chunkLen;
 		}
 
