@@ -6,6 +6,7 @@
 #include <zlib.h>
 #include <vector>
 #include <cstring>
+#include <fstream>
 
 using namespace std;
 
@@ -16,11 +17,21 @@ auto writeMCString = [](char* buf, const string& str){
 	memcpy(buf, str.c_str(), min(str.size(), (size_t)64));
 };
 
+class Level {
+public:
+	void load(){
+
+	}
+};
+
 class Player {
 public:
 	string username;
 	string verKey;
 	bool isOP;
+
+	short x, y, z, yaw, pitch;
+	uint8_t id;
 
 	Player(string uname, string verkey, bool op){
 		username = uname;
