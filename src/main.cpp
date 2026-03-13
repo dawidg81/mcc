@@ -7,14 +7,14 @@
 #endif
 
 #include <winsock2.h>
-#include <thread>
-#include <mutex>
-#include <map>
 #include <string>
 #include <zlib.h>
 #include <vector>
 #include <cstring>
 #include <fstream>
+#include <thread>
+#include <mutex>
+#include <map>
 
 using namespace std;
 
@@ -107,7 +107,7 @@ public:
 	}
 };
 
-mutex playersMutex;
+recursive_mutex playersMutex;
 map<uint8_t, Player*> players;
 
 uint8_t assignId(){
