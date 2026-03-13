@@ -15,7 +15,7 @@ endif
 all: ccraft2
 
 ccraft2: $(OBJ)
-	g++ -std=c++14 $(OBJ) -o ccraft2 -lpthread -lws2_32 -lz
+	g++ -std=c++14 $(OBJ) -o ccraft2 -lws2_32 -lz -lpthread
 
 build/%.o: src/%.cpp
 	$(MKDIR)

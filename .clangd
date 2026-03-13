@@ -1,6 +1,7 @@
 CompileFlags:
   Add: [
     "-std=c++14",
+    "-lpthread",
     "--target=i686-w64-windows-gnu",
     "-D_M_IX86"
   ]

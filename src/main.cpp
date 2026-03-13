@@ -107,7 +107,7 @@ public:
 	}
 };
 
-__gnu_cxx::__recursive_mutex playersMutex;
+mutex playersMutex;
 map<uint8_t, Player*> players;
 
 uint8_t assignId(){
