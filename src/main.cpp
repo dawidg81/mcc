@@ -19,8 +19,62 @@ auto writeMCString = [](char* buf, const string& str){
 
 class Level {
 public:
-	void load(){
+	int sizeX, sizeY, sizeZ;
+	vector<uint8_t> blocks;
 
+	Level(int x, int y, int z) : sizeX(x), sizeY(y), sizeZ(z){
+		blocks.resize(x * y * z, 0x00);
+	}
+
+	void setBlock(int x, int y, int z, uint8_t id){
+		if(x < 0 || x>= sizeX || y < 0 || y >= sizeY || z < 0 || z >= sizeZ) return;
+		blocks[x + z * sizeX + y * sizeX * sizeZ] = id;
+	}
+
+	uint8_t getBlock(int x, int y, int z){
+		if(x < 0 || x >= sizeX || y < 0 || y >= sizeY || z < 0 || z >= sizeZ) return 0;
+		return blocks[x+z*sizeX+y*sizeX*sizeZ];
+	}
+
+	void save(const string& filename){
+		ofstream file(filename, ios::binary);
+		if(!file){log.err("Failed to open level file for writing: " + filename); return;}
+
+		for(int iy=0; iy < sizeY; iy++){
+			for(int iz=0; iz < sizeZ; iz++){
+				for(int ix=0; ix < sizeX; ix++){
+					uint8_t id = getBlock(ix, iy, iz);
+					if(id == 0x00) continue;
+
+					uint8_t entry[7];
+					entry[0] = (ix >> 8) & 0xFF; entry[1] = ix & 0xFF;
+					entry[2] = (iy >> 8) & 0xFF; entry[3] = iy & 0xFF;
+					entry[4] = (iz >> 8) & 0xFF; entry[5] = iz & 0xFF;
+					entry[6] = id;
+					file.write((char*)entry, 7);
+				}
+			}
+		}
+		file.close();
+		log.info("Level saved to " + filename);
+	}
+
+	void load(const string& filename){
+		ifstream file(filename, ios::binary);
+		if(!file){log.err("Failed to open level file: " + filename); return;}
+
+		fill(blocks.begin(), blocks.end(), 0x00);
+
+		uint8_t entry[7];
+		while(file.read((char*)entry, 7)){
+			int ix = (entry[0] << 8) | entry[1];
+			int iy = (entry[2] << 8) | entry[3];
+			int iz = (entry[4] << 8) | entry[5];
+			uint8_t id = entry[6];
+			setBlock(ix, iy, iz, id);
+		}
+		file.close();
+		log.info("Level loaded from " + filename);
 	}
 };
 
@@ -83,8 +137,9 @@ public:
 		}
 	}
 
-	void sendLevel(SOCKET socket, int x, int y, int z){
+	void sendLevel(SOCKET socket, Level& level){
 		// PREPARE LEVEL DATA
+		int x = level.sizeX, y = level.sizeY, z = level.sizeZ;
 		int totalBlocks = x * y * z;
 		vector<uint8_t> levelData(4 + totalBlocks);
 
@@ -93,13 +148,7 @@ public:
 		levelData[2] = (totalBlocks >> 8) & 0xFF;
 		levelData[3] = totalBlocks & 0xFF;
 
-		for(int iy=0; iy < y; iy++){
-			for(int iz=0; iz < z; iz++){
-				for(int ix=0; ix < x; ix++){
-					levelData[4 + ix + iz * x + iy * x * z] = 0x00;
-				}
-			}
-		}
+		memcpy(levelData.data() + 4, level.blocks.data(), totalBlocks);
 
 		// COMPRESS
 		uLongf compressedSize = compressBound(levelData.size()) + 18;
@@ -191,7 +240,11 @@ int main(){
 		char utype = player->isOP ? 0x64 : 0x00;
 
 		pack.sendServerId(clientSocket, name, motd, utype);
-		pack.sendLevel(clientSocket, 256, 64, 256);
+		
+		Level level(256, 64, 256);
+		level.load("world.lvl");
+		pack.sendServerId(clientSocket, name, motd, utype);
+		pack.sendLevel(clientSocket, level);
 
 		delete player;
 	}
