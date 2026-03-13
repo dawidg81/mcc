@@ -1,7 +1,15 @@
 #include "Logger.hpp"
 #include "Socket.hpp"
 
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0601
+#include <sdkddkver.h>
+#endif
+
 #include <winsock2.h>
+#include <thread>
+#include <mutex>
+#include <map>
 #include <string>
 #include <zlib.h>
 #include <vector>
@@ -99,6 +107,16 @@ public:
 	}
 };
 
+mutex playersMutex;
+map<uint8_t, Player*> players;
+
+uint8_t assignId(){
+	for(uint8_t i = 0; i < 127; i++){
+		if(players.find(i) == players.end()) return i;
+	}
+	return 255;
+}
+
 class Packet {
 public:
 	Player* recvPlayerId(SOCKET socket){
@@ -123,7 +141,7 @@ public:
 		uint8_t unused = buffer[130];
 
 		log.info(username + " connected");
-		return new Player(username, verKey, false);
+		return new Player(username, verKey, false, socket);
 	}
 
 	void sendServerId(SOCKET socket, string name, string motd, char utype){
@@ -248,7 +266,6 @@ int main(){
 		
 		Level level(256, 64, 256);
 		level.load("world.lvl");
-		pack.sendServerId(clientSocket, name, motd, utype);
 		pack.sendLevel(clientSocket, level);
 
 		delete player;
