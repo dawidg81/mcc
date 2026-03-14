@@ -43,6 +43,18 @@ public:
 		return blocks[x+z*sizeX+y*sizeX*sizeZ];
 	}
 
+	void newFile(){
+		fill(blocks.begin(), blocks.end(), 0x00);
+		for(int iz=0; iz < sizeZ; iz++){
+			for(int ix=0; ix < sizeX; ix++){
+				setBlock(ix, sizeY/2 - 2, iz, 3);
+				setBlock(ix, sizeY/2 - 1, iz, 3);
+				setBlock(ix, sizeY/2, iz, 2);
+			}
+		}
+		logger.info("Generated new level to a file";);
+	}
+
 	void save(const string& filename){
 		ofstream file(filename, ios::binary);
 		if(!file){logger.err("Failed to open level file for writing: " + filename); return;}
@@ -414,11 +426,29 @@ disconnect:
 	delete player;
 }
 
+void saveLoop(){
+	while(true){
+		this_thread::sleep_for(chrono::minutes(5));
+		lock_guard<mutex> lock(playersMutex);
+		level.save("world.lvl");
+	}
+}
+
 int main(){
 	logger.showDebug = false;
 	logger.raw("ccraft2 v0.0.0");
 
-	level.load("world.lvl");
+	ifstream checkFile("world.lvl");
+	if(checkFile.good()){
+		checkFile.close();
+		level.load("world.lvl");
+	} else {
+		checkFile.close();
+		level.generateFlatgrass();
+		level.save("world.lvl");
+	}
+
+	thread(saveLoop).detach();
 
 	Socket socket;
 	socket.winInit();
