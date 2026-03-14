@@ -328,6 +328,12 @@ void handlePlayer(SOCKET clientSocket){
 	pack.sendServerId(clientSocket, name, motd, utype);
 	pack.sendLevel(clientSocket, level);
 
+	{
+	lock_guard<mutex> lock(playersMutex);
+	for(auto& pair : players)
+		pack.sendMessage(pair.second->socket, player->id, "&c" + player->username + " joined the game");
+	}
+
 	player->x = (level.sizeX / 2) * 32;
 	player->y = (level.sizeY / 2) * 32 + 51;
 	player->z = (level.sizeZ / 2) * 32;
@@ -423,6 +429,11 @@ disconnect:
 	}
 
 	logger.info(player->username + " disconnected");
+	{
+	lock_guard<mutex> lock(playersMutex);
+	for(auto& pair : players)
+		pack.sendMessage(pair.second->socket, player->id, "&c" + player->username + " left the game");
+	}
 	closesocket(clientSocket);
 	delete player;
 }
