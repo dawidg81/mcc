@@ -1,6 +1,7 @@
 #define _WIN32_WINNT 0x0601
 #define WIN32_LEAN_AND_MEAN
 
+#include <sstream>
 #include <thread>
 #include <mutex>
 #include <map>
@@ -9,6 +10,7 @@
 #include <vector>
 #include <cstring>
 #include <fstream>
+#include <netdb.h>
 
 #include "Logger.hpp"
 #include "Socket.hpp"
@@ -16,6 +18,7 @@
 using namespace std;
 
 Logger logger;
+string serverSalt = "472bm7";
 
 auto writeMCString = [](char* buf, const string& str){
 	memset(buf, ' ', 64);
@@ -312,7 +315,7 @@ void handlePlayer(SOCKET clientSocket){
 	Player* player = pack.recvPlayerId(clientSocket);
 	if(player == nullptr) return;
 
-	string name = "MCC Testing";
+	string name = "ccraft Testing";
 	string motd = "Welcome, " + player->username + "!";
 	char utype = player->isOP ? 0x64 : 0x00;
 
@@ -432,9 +435,86 @@ void saveLoop(){
 	}
 }
 
+void heartbeat(){
+	const string host = "www.classicube.net";
+	const string path = "/server/heartbeat/";
+	const int port = 80;
+
+	while(true){
+		size_t userCount;
+		{
+			lock_guard<mutex> lock(playersMutex);
+			userCount = players.size();
+		}
+		
+		string serverName = "ccraft%20Testing";
+		string query =
+			"name=" + serverName +
+			"&port=25565" +
+			"&users=" + to_string(userCount) +
+			"&max=256" +
+			"&salt=" + serverSalt +
+			"&public=true" +
+			"&software=ccraft2%20v0.1.0";
+
+		string request =
+			"GET " + path + "?" + query + " HTTP/1.0\r\n"
+			"Host: " + host + "\r\n"
+			"Connection: close\r\n"
+			"\r\n";
+
+struct hostent* he = gethostbyname(host.c_str());
+if (!he) {
+    logger.err("Heartbeat: DNS resolution failed");
+    this_thread::sleep_for(chrono::minutes(1));
+    continue;
+}
+
+int s = ::socket(AF_INET, SOCK_STREAM, 0);
+if (s < 0) {
+    logger.err("Heartbeat: socket creation failed");
+    this_thread::sleep_for(chrono::minutes(1));
+    continue;
+}
+
+struct sockaddr_in addr = {};
+addr.sin_family = AF_INET;
+addr.sin_port   = htons(port);
+addr.sin_addr   = *(struct in_addr*)he->h_addr;
+
+if (::connect(s, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+    logger.err("Heartbeat: connect failed");
+    ::close(s);
+    this_thread::sleep_for(chrono::minutes(1));
+    continue;
+}	
+
+		send(s, request.c_str(), (int)request.size(), 0);
+
+		string response;
+		char rbuf[512];
+		int n;
+		while((n = recv(s, rbuf, sizeof(rbuf) - 1, 0)) > 0){
+			rbuf[n] = '\0';
+			response += rbuf;
+		}
+		closesocket(s);
+
+		auto pos = response.find("\r\n\r\n");
+		if (pos != string::npos) {
+			string body = response.substr(pos + 4);
+			if (body.find("errors") != string::npos)
+				logger.err("Heartbeat error: " + body);
+			else
+				logger.info("Heartbeat OK: " + body);
+		}
+		this_thread::sleep_for(chrono::minutes(1));
+	}
+}
+
 int main(){
 	logger.showDebug = false;
-	logger.raw("ccraft2 v0.0.0");
+	logger.raw("ccraft2 v0.1.0");
 
 	ifstream checkFile("world.lvl");
 	if(checkFile.good()){
@@ -447,6 +527,7 @@ int main(){
 	}
 
 	thread(saveLoop).detach();
+	thread(heartbeat).detach();
 
 	Socket socket;
 	socket.sockInit();
