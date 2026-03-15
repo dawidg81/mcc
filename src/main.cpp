@@ -319,12 +319,12 @@ public:
 		p->enqueue(buf, 74);
 	}
 
-	void sendDespawnPlayer(Player* p){
+	void sendDespawnPlayer(Player* p, Player* target){
 		char buf[2] = {};
 		buf[0] = 0x0c;
 		buf[1] = (int8_t)p->id;
 		// send(socket, buf, sizeof(buf), 0);
-		p->enqueue(buf, 2);
+		target->enqueue(buf, 2);
 	}
 
 	void sendSetBlock(Player* p, short x, short y, short z, uint8_t block){
@@ -338,7 +338,7 @@ public:
 		p->enqueue(buf, 8);
 	}
 
-	void sendPositionUpdate(Player* p){
+	void sendPositionUpdate(Player* p, Player* target){
 		char buf[10] = {};
 		buf[0] = 0x08;
 		buf[1] = (int8_t)p->id;
@@ -348,16 +348,16 @@ public:
 		buf[8] = p->yaw;
 		buf[9] = p->pitch;
 		// send(socket, buf, sizeof(buf), 0);
-		p->enqueue(buf, 10);
+		target->enqueue(buf, 10);
 	}
 
-	void sendMessage(Player* p, const string& msg){
+	void sendMessage(Player* p, Player* target, const string& msg){
 		char buf[66] = {};
 		buf[0] = 0x0d;
 		buf[1] = (int8_t)p->id;
 		writeMCString(buf +2, msg);
 		// send(socket, buf, sizeof(buf), 0);
-		p->enqueue(buf, 66);
+		target->enqueue(buf, 66);
 	}
 
 	void sendDisconnect(Player* p, const string& reason){
@@ -424,7 +424,7 @@ void handlePlayer(SOCKET clientSocket){
 	{
 	lock_guard<mutex> lock(playersMutex);
 	for(auto& pair : players)
-		pack.sendMessage(player, "&e" + player->username + " joined the game");
+		pack.sendMessage(player, pair.second, "&e" + player->username + " joined the game");
 	}
 
 	player->x = (level.sizeX / 2) * 32;
@@ -500,7 +500,7 @@ void handlePlayer(SOCKET clientSocket){
 					  lock_guard<mutex> lock(playersMutex);
 					  for(auto& pair: players){
 						  if(pair.second->id != player->id)
-							  pack.sendPositionUpdate(player);
+							  pack.sendPositionUpdate(player, pair.second);
 					  }
 					  break;
 				  }
@@ -515,7 +515,7 @@ void handlePlayer(SOCKET clientSocket){
 
 					  lock_guard<mutex> lock(playersMutex);
 					  for(auto& pair : players)
-						  pack.sendMessage(player, "<" + player->username + "> " + msg);
+						  pack.sendMessage(player, pair.second, "<" + player->username + "> " + msg);
 					  break;
 				  }
 			default:
@@ -529,14 +529,14 @@ disconnect:
 		lock_guard<mutex> lock(playersMutex);
 		players.erase(player->id);
 		for(auto& pair : players)
-			pack.sendDespawnPlayer(player);
+			pack.sendDespawnPlayer(player, pair.second);
 	}
 
 	logger.info(player->username + " disconnected");
 	{
 	lock_guard<mutex> lock(playersMutex);
 	for(auto& pair : players)
-		pack.sendMessage(player, "&e" + player->username + " left the game");
+		pack.sendMessage(player, pair.second, "&e" + player->username + " left the game");
 	}
 	closesocket(clientSocket);
 	delete player;
