@@ -10,6 +10,7 @@
 #include <vector>
 #include <cstring>
 #include <fstream>
+#include <queue>
 
 #ifndef _WIN32
 #include <netdb.h>
@@ -119,6 +120,25 @@ public:
 		socket = sock;
 		x = y = z = yaw = pitch = 0;
 		id = 0;
+	}
+
+	mutex sendMutex;
+	queue<vector<char>> sendQueue;
+	bool disconnected = false;
+
+	void enqueue(const char* data, int len){
+		lock_guard<mutex> lock(sendMutex);
+		if(disconnected) return;
+		sendQueue.push(vector<char>(data, data + len));
+	}
+
+	void flushQueue(){
+		lock_guard<mutex> lock(sendMutex);
+		while(!sendQueue.empty()){
+			auto& pkt = sendQueue.front();
+			send(socket, pkt.data(), pkt.size(), 0);
+			sendQueue.pop();
+		}
 	}
 };
 
@@ -260,14 +280,16 @@ public:
 		buf[70] = (p->z >> 8) & 0xFF; buf[71] = p->z & 0xFF;
 		buf[72] = p->yaw;
 		buf[73] = p->pitch;
-		send(socket, buf, sizeof(buf), 0);
+		// send(socket, buf, sizeof(buf), 0);
+		p->enqueue(buf, 74);
 	}
 
 	void sendDespawnPlayer(SOCKET socket, uint8_t id){
 		char buf[2] = {};
 		buf[0] = 0x0c;
 		buf[1] = (int8_t)id;
-		send(socket, buf, sizeof(buf), 0);
+		// send(socket, buf, sizeof(buf), 0);
+		p->enqueue(buf, 2);
 	}
 
 	void sendSetBlock(SOCKET socket, short x, short y, short z, uint8_t block){
@@ -277,7 +299,8 @@ public:
 		buf[3] = (y >> 8) & 0xFF; buf[4] = y & 0xFF;
 		buf[5] = (z >> 8) & 0xFF; buf[6] = z & 0xFF;
 		buf[7] = block;
-		send(socket, buf, sizeof(buf), 0);
+		// send(socket, buf, sizeof(buf), 0);
+		p->enqueue(buf, 8);
 	}
 
 	void sendPositionUpdate(SOCKET socket, Player* p){
@@ -289,7 +312,8 @@ public:
 		buf[6] = (p->z >> 8) & 0xFF; buf[7] = p->z & 0xFF;
 		buf[8] = p->yaw;
 		buf[9] = p->pitch;
-		send(socket, buf, sizeof(buf), 0);
+		// send(socket, buf, sizeof(buf), 0);
+		p->enqueue(buf, 10);
 	}
 
 	void sendMessage(SOCKET socket, uint8_t id, const string& msg){
@@ -297,14 +321,16 @@ public:
 		buf[0] = 0x0d;
 		buf[1] = (int8_t)id;
 		writeMCString(buf +2, msg);
-		send(socket, buf, sizeof(buf), 0);
+		// send(socket, buf, sizeof(buf), 0);
+		p->enqueue(buf, 10);
 	}
 
 	void sendDisconnect(SOCKET socket, const string& reason){
 		char buf[65] = {};
 		buf[0] = 0x0e;
 		writeMCString(buf + 1, reason);
-		send(socket, buf, sizeof(buf), 0);
+		// send(socket, buf, sizeof(buf), 0);
+		p->enqueue(buf, 66);
 	}
 };
 
@@ -334,6 +360,16 @@ void handlePlayer(SOCKET clientSocket){
 		player->id = assignId();
 		players[player->id] = player;
 	}
+
+	thread senderThread([player](){
+		while(true){
+			this_thread::sleep_for(chrono::milliseconds(10));
+			player->flushQueue();
+			lock_guard<mutex> lock(playersMutex);
+			if(players.find(player->id) == players.end()) break;
+		}
+	});
+	senderThread.detach();
 
 	pack.sendServerId(clientSocket, name, motd, utype);
 	pack.sendLevel(clientSocket, level);
@@ -390,8 +426,15 @@ void handlePlayer(SOCKET clientSocket){
 					  level.setBlock(bx, by, bz, newBlock);
 
 					  lock_guard<mutex> lock(playersMutex);
+					  
+					  char blkbuf[8] = {};
+					  blkbuf[0] = 0x06;
+					  blkbuf[1] = (bx >> 8) & 0xFF; blkbuf[2] = bx & 0xFF;
+					  blkbuf[3] = (by >> 8) & 0xFF; blkbuf[4] = by & 0xFF;
+					  blkbuf[5] = (bz >> 8) & 0xFF; blkbuf[6] = bz & 0xFF;
+					  blkbuf[7] = newBlock;
 					  for(auto& pair : players)
-						  pack.sendSetBlock(pair.second->socket, bx, by, bz, newBlock);
+						  pair.second->enqueue(blkbuf, 8);
 					  break;
 				  }
 			case 0x08:{ // pos ort
