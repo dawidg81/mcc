@@ -371,7 +371,7 @@ void handlePlayer(SOCKET clientSocket){
 
 	while(true){
 		char packetId = 0;
-		if(!recvExact(clientSocket, &packetId, 1)) break;
+		if(!recvExact(clientSocket, &packetId, 1)) continue;
 
 		switch((uint8_t)packetId){
 			case 0x05:{ // set block
