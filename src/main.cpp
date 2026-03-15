@@ -388,6 +388,7 @@ void handlePlayer(SOCKET clientSocket){
 
 					  uint8_t newBlock = (mode == 0x01) ? blockType : 0x00;
 					  level.setBlock(bx, by, bz, newBlock);
+					  logger.debug("level set block");
 
 					  lock_guard<mutex> lock(playersMutex);
 					  for(auto& pair : players)
