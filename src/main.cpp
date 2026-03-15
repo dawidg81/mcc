@@ -375,6 +375,7 @@ void handlePlayer(SOCKET clientSocket){
 
 		switch((uint8_t)packetId){
 			case 0x05:{ // set block
+					  logger.debug("Received set block packet");
 					  char buf[7] = {};
 					  if(!recvExact(clientSocket, buf, 7)) goto disconnect;
 					  short bx = (short)((uint8_t)buf[0] << 8 | (uint8_t)buf[1]);
