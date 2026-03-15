@@ -21,6 +21,8 @@
 
 using namespace std;
 
+#define VERSION "0.2.1"
+
 Logger logger;
 string serverSalt = "472bm7";
 
@@ -570,7 +572,7 @@ void heartbeat(){
 			"&max=256" +
 			"&salt=" + serverSalt +
 			"&public=true" +
-			"&software=ccraft2%20v0.1.0";
+			"&software=ccraft2%20v" + VERSION;
 
 		string request =
 			"GET " + path + "?" + query + " HTTP/1.0\r\n"
@@ -629,7 +631,7 @@ if (::connect(s, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
 
 int main(){
 	logger.showDebug = true;
-	logger.raw("ccraft2 v0.1.0");
+	logger.raw("ccraft2 v" + VERSION);
 
 	ifstream checkFile("world.lvl");
 	if(checkFile.good()){
