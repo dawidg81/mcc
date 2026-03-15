@@ -371,11 +371,10 @@ void handlePlayer(SOCKET clientSocket){
 
 	while(true){
 		char packetId = 0;
-		if(!recvExact(clientSocket, &packetId, 1)) continue;
+		if(!recvExact(clientSocket, &packetId, 1)) break;
 
 		switch((uint8_t)packetId){
 			case 0x05:{ // set block
-					  logger.debug("Received set block packet");
 					  char buf[7] = {};
 					  if(!recvExact(clientSocket, buf, 7)) goto disconnect;
 					  short bx = (short)((uint8_t)buf[0] << 8 | (uint8_t)buf[1]);
@@ -389,7 +388,6 @@ void handlePlayer(SOCKET clientSocket){
 
 					  uint8_t newBlock = (mode == 0x01) ? blockType : 0x00;
 					  level.setBlock(bx, by, bz, newBlock);
-					  logger.debug("level set block");
 
 					  lock_guard<mutex> lock(playersMutex);
 					  for(auto& pair : players)
