@@ -25,7 +25,7 @@
 
 using namespace std;
 
-#define VERSION "0.2.5"
+#define VERSION "0.2.6"
 
 Logger logger;
 
@@ -466,6 +466,19 @@ bool recvExact(SOCKET socket, char* buf, int len){
 void handlePlayer(SOCKET clientSocket){
 	Player* player = pack.recvPlayerId(clientSocket);
 	if(player == nullptr) return;
+
+	// auth checking
+	string expectedKey = md5(serverSalt + player->username);
+	if(player->verKey != expectedKey){
+    	char buf[65] = {};
+    	buf[0] = 0x0e;
+    	writeMCString(buf + 1, "Login failed!");
+    	send(clientSocket, buf, sizeof(buf), 0);
+    	logger.err(player->username + " failed authentication");
+    	closesocket(clientSocket);
+    	delete player;
+    	return;
+	}
 
 	{
 		lock_guard<mutex> lock(playersMutex);
