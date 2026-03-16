@@ -35,16 +35,16 @@ auto writeMCString = [](char* buf, const string& str){
 };
 
 std::string generateSalt(int bytes = 32) {
-    std::random_device rd;
-    std::string salt;
-    salt.reserve(bytes * 2);
+	std::random_device rd;
+	std::string salt;
+	salt.reserve(bytes * 2);
 
-    for (int i = 0; i < bytes; i++) {
-        unsigned char b = rd() & 0xff;
-        salt += "0123456789abcdef"[b >> 4];
-        salt += "0123456789abcdef"[b & 0xf];
-    }
-    return salt;
+	for (int i = 0; i < bytes; i++) {
+		unsigned char b = rd() & 0xff;
+		salt += "0123456789abcdef"[b >> 4];
+		salt += "0123456789abcdef"[b & 0xf];
+	}
+	return salt;
 }
 
 std::string serverSalt = generateSalt();
@@ -406,6 +406,21 @@ void handlePlayer(SOCKET clientSocket){
 	Player* player = pack.recvPlayerId(clientSocket);
 	if(player == nullptr) return;
 
+	{
+	lock_guard<mutex> lock(playersMutex);
+	for(auto& pair : players){
+		if(pair.second->username == player->username){
+			char buf[65] = {};
+			buf[0] = 0x0e;
+			writeMCString(buf + 1, "Username '" + player->username + "' already taken");
+			send(clientSocket, buf, sizeof(buf), 0);
+			closesocket(clientSocket);
+			delete player;
+			return;
+		}
+	}
+}
+
 	string name = "ccraft Testing";
 	string motd = "Welcome, " + player->username + "!";
 	char utype = player->isOP ? 0x64 : 0x00;
@@ -610,16 +625,16 @@ void heartbeat(){
 
 struct hostent* he = gethostbyname(host.c_str());
 if (!he) {
-    logger.err("Heartbeat: DNS resolution failed");
-    this_thread::sleep_for(chrono::minutes(1));
-    continue;
+	logger.err("Heartbeat: DNS resolution failed");
+	this_thread::sleep_for(chrono::minutes(1));
+	continue;
 }
 
 int s = ::socket(AF_INET, SOCK_STREAM, 0);
 if (s < 0) {
-    logger.err("Heartbeat: socket creation failed");
-    this_thread::sleep_for(chrono::minutes(1));
-    continue;
+	logger.err("Heartbeat: socket creation failed");
+	this_thread::sleep_for(chrono::minutes(1));
+	continue;
 }
 
 struct sockaddr_in addr = {};
@@ -628,10 +643,10 @@ addr.sin_port   = htons(port);
 addr.sin_addr   = *(struct in_addr*)he->h_addr;
 
 if (::connect(s, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-    logger.err("Heartbeat: connect failed");
-    ::close(s);
-    this_thread::sleep_for(chrono::minutes(1));
-    continue;
+	logger.err("Heartbeat: connect failed");
+	::close(s);
+	this_thread::sleep_for(chrono::minutes(1));
+	continue;
 }	
 
 		send(s, request.c_str(), (int)request.size(), 0);
