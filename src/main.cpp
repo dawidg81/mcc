@@ -25,7 +25,7 @@
 
 using namespace std;
 
-#define VERSION "0.2.1"
+#define VERSION "0.2.4"
 
 Logger logger;
 
@@ -409,7 +409,8 @@ void handlePlayer(SOCKET clientSocket){
 	string name = "ccraft Testing";
 	string motd = "Welcome, " + player->username + "!";
 	char utype = player->isOP ? 0x64 : 0x00;
-
+	auto stopSender = make_shared<atomic<bool>>(false);
+	
 	{
 		lock_guard<mutex> lock(playersMutex);
 		player->id = assignId();
@@ -439,8 +440,6 @@ void handlePlayer(SOCKET clientSocket){
 	});
 	senderThread.detach();
 	*/
-
-	auto stopSender = make_shared<atomic<bool>>(false);
 
 	thread([player, stopSender](){
 		while(!stopSender->load()){
