@@ -454,6 +454,13 @@ public:
 Packet pack;
 Level level(256, 64, 256);
 
+class Command {
+	public:
+	void cmdKickPlayer(Player* p, Player* target){
+		pack.sendDisconnect(target, "You've been kicked");
+	}
+};
+
 bool recvExact(SOCKET socket, char* buf, int len){
 	int total = 0;
 	while(total < len){
