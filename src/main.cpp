@@ -27,7 +27,7 @@
 
 using namespace std;
 
-#define VERSION "0.3.0"
+#define VERSION "0.4.0"
 
 Logger logger;
 
@@ -295,7 +295,7 @@ public:
 		uint8_t unused = buffer[130];
 
 		logger.info(username + " connected");
-		return new Player(username, verKey, false, socket);
+		return new Player(username, verKey, isPlayerOP(username), socket);
 	}
 
 	void sendServerId(SOCKET socket, string name, string motd, char utype){
@@ -493,6 +493,17 @@ private:
 };
 
 CommandHandler cmdHandler;
+
+bool isPlayerOP(const string& username) {
+	ifstream file("ops.txt");
+	if(!file) return false;
+	string line;
+	while(getline(file, line)){
+		if(!line.empty() && line.back() == '\r') line.pop_back();
+		if (line == username) return true;
+	}
+	return false;
+}
 
 void initCommands(){
 	cmdHandler.registerCommand("kick", [](commandContext& ctx){
