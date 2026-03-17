@@ -270,6 +270,17 @@ uint8_t assignId(){
 	return 255;
 }
 
+bool isPlayerOP(const string& username) {
+	ifstream file("ops.txt");
+	if(!file) return false;
+	string line;
+	while(getline(file, line)){
+		if(!line.empty() && line.back() == '\r') line.pop_back();
+		if (line == username) return true;
+	}
+	return false;
+}
+
 class Packet {
 public:
 	Player* recvPlayerId(SOCKET socket){
@@ -493,17 +504,6 @@ private:
 };
 
 CommandHandler cmdHandler;
-
-bool isPlayerOP(const string& username) {
-	ifstream file("ops.txt");
-	if(!file) return false;
-	string line;
-	while(getline(file, line)){
-		if(!line.empty() && line.back() == '\r') line.pop_back();
-		if (line == username) return true;
-	}
-	return false;
-}
 
 void initCommands(){
 	cmdHandler.registerCommand("kick", [](commandContext& ctx){
@@ -821,7 +821,7 @@ if (::connect(s, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
 	}
 }
 
-void shutdown(){
+void serverShutdown(int sig){
     logger.info("Shutting down...");
     {
         lock_guard<mutex> lock(playersMutex);
@@ -837,8 +837,8 @@ void shutdown(){
 
 int main(){
 	signal(SIGPIPE, SIG_IGN);
-	signal(SIGINT, shutdown);
-	signal(SIGTERM, shutdown);
+	signal(SIGINT, serverShutdown);
+	signal(SIGTERM, serverShutdown);
 	logger.showDebug = true;
 	string splash = "ccraft2 v";
 	splash.append(VERSION);
