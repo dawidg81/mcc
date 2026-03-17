@@ -578,7 +578,6 @@ void handlePlayer(SOCKET clientSocket){
 	if(player == nullptr) return;
 
 	// auth checking
-	/*
 	if(player->verKey != md5(serverSalt + player->username)){
     		char buf[65] = {};
 	    	buf[0] = 0x0e;
@@ -588,7 +587,7 @@ void handlePlayer(SOCKET clientSocket){
 	    	closesocket(clientSocket);
 	    	delete player;
 	    	return;
-	}*/
+	}
 
 	{
 		lock_guard<mutex> lock(playersMutex);
