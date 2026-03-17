@@ -821,8 +821,24 @@ if (::connect(s, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
 	}
 }
 
+void shutdown(){
+    logger.info("Shutting down...");
+    {
+        lock_guard<mutex> lock(playersMutex);
+        for(auto& pair : players){
+            pack.sendDisconnect(pair.second, "Server shutting down");
+            pair.second->flushQueue();
+        }
+        level.save("world.lvl");
+    }
+    logger.info("Goodbye!");
+    exit(0);
+}
+
 int main(){
 	signal(SIGPIPE, SIG_IGN);
+	signal(SIGINT, shutdown);
+	signal(SIGTERM, shutdown);
 	logger.showDebug = true;
 	string splash = "ccraft2 v";
 	splash.append(VERSION);
