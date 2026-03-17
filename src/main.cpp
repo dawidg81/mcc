@@ -25,7 +25,7 @@
 
 using namespace std;
 
-#define VERSION "0.2.6"
+#define VERSION "0.3.0"
 
 Logger logger;
 
