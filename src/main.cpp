@@ -454,12 +454,65 @@ public:
 Packet pack;
 Level level(256, 64, 256);
 
-class Command {
-	public:
-	void cmdKickPlayer(Player* p, Player* target){
-		pack.sendDisconnect(target, "You've been kicked");
-	}
+struct commandContext {
+	Player* sender;
+	vector<string> args;
 };
+
+class CommandHanlder {
+public:
+	using handlerFn = function<void(commandContext&)>;
+
+	void registerCommand(const string& name, handlerFn fn){
+		commands[name] = fn;
+
+		bool handle(Player* sender, const string& msg){
+			if(msg.empty() || msg[0] != '/') return false;
+
+			commandContext ctx;
+			ctx.sender = sender;
+			istringstream ss(msg.substr(1));
+			string token;
+			while(ss >> token) ctx.args.push_back(token);
+			if(ctx.args.empty()) return true;
+
+			string name = ctxargs[0];
+			auto it = commands.find(name);
+			if(it != commands.end()){
+				it->second(ctx);
+			} else {
+				pack.sendMessage(sender, sender, "&cUnknown `" + name + "`")
+			}
+			return true;
+		}
+	}
+private:
+	map<string, handlerFn> commands;
+};
+
+CommandHandler cmdHandler;
+
+void initCommands(){
+	cmdHandler.registerCommand("kick", [](commandContext& ctx){
+		if(!ctx.sender->isOP){
+			pack.sendMessage(ctx.sender, ctx.sender, "&cYou're not an op");
+			return;
+		}
+		if(ctx.args.size() < 2){
+			pack.sendMessage(ctx.sender, ctx.sender, "&cUsage: /kick [player name]");
+			return;
+		}
+		string target = ctx.args[1];
+		lock_guard<mutex> lock(playersMutex);
+		for(auto& pair : players){
+			if(pair.second->username == target){
+				pack.sendDisconnect(pair.second, "You've been kicked");
+				return;
+			}
+		}
+		pack.sendMessage(ctx.sender, ctx.sender, "&cPlayer `" + target + "` hasn't been found!");
+	});
+}
 
 bool recvExact(SOCKET socket, char* buf, int len){
 	int total = 0;
@@ -638,11 +691,13 @@ void handlePlayer(SOCKET clientSocket){
 					  string msg; msg.assign(buf + 1, 64);
 					  msg.erase(msg.find_last_not_of(' ') + 1);
 
+					  
+
 					  logger.info("<" + player->username + "> " + msg);
 
 					  lock_guard<mutex> lock(playersMutex);
 					  for(auto& pair : players)
-						  pack.sendMessage(player, pair.second, "<" + player->username + "> " + msg);
+						  pack.sendMessage(player, pair.second, player->username + ": " + msg);
 					  break;
 				  }
 			default:
@@ -771,6 +826,8 @@ int main(){
 
 	thread(saveLoop).detach();
 	thread(heartbeat).detach();
+
+	initCommands();
 
 	Socket socket;
 	socket.sockInit();
