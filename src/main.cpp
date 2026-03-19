@@ -190,16 +190,18 @@ public:
 	string username;
 	string verKey;
 	bool isOP;
+	bool isBanned;
 	uint8_t id;
 	SOCKET socket;
 
 	short x, y, z;
 	uint8_t yaw, pitch;
 
-	Player(string uname, string verkey, bool op, SOCKET sock){
+	Player(string uname, string verkey, bool op, bool banned, SOCKET sock){
 		username = uname;
 		verKey = verkey;
 		isOP = op;
+		isBanned = banned;
 		socket = sock;
 		x = y = z = yaw = pitch = 0;
 		id = 0;
@@ -270,8 +272,19 @@ uint8_t assignId(){
 	return 255;
 }
 
-bool isPlayerOP(const string& username) {
+bool isPlayerOP(const string& username){
 	ifstream file("ops.txt");
+	if(!file) return false;
+	string line;
+	while(getline(file, line)){
+		if(!line.empty() && line.back() == '\r') line.pop_back();
+		if (line == username) return true;
+	}
+	return false;
+}
+
+bool isPlayerBanned(const string& username){
+	ifstream file("blacklist.txt");
 	if(!file) return false;
 	string line;
 	while(getline(file, line)){
@@ -306,7 +319,7 @@ public:
 		uint8_t unused = buffer[130];
 
 		logger.info(username + " connected");
-		return new Player(username, verKey, isPlayerOP(username), socket);
+		return new Player(username, verKey, isPlayerOP(username), isPlayerBanned(username), socket);
 	}
 
 	void sendServerId(SOCKET socket, string name, string motd, char utype){
@@ -578,12 +591,24 @@ void handlePlayer(SOCKET clientSocket){
 	if(player == nullptr) return;
 
 	// auth checking
+	/*
 	if(player->verKey != md5(serverSalt + player->username)){
     		char buf[65] = {};
 	    	buf[0] = 0x0e;
 	    	writeMCString(buf + 1, "Login failed!");
 	    	send(clientSocket, buf, sizeof(buf), 0);
 	    	logger.err(player->username + " failed authentication");
+	    	closesocket(clientSocket);
+	    	delete player;
+	    	return;
+	}*/
+
+	if(player->isBanned){
+		char buf[65] = {};
+	    	buf[0] = 0x0e;
+	    	writeMCString(buf + 1, "Player '" + player->username + "' is blacklisted");
+	    	send(clientSocket, buf, sizeof(buf), 0);
+	    	logger.err(player->username + " tried to join but is blacklisted");
 	    	closesocket(clientSocket);
 	    	delete player;
 	    	return;
