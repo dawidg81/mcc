@@ -120,7 +120,7 @@ port 25565 in the router.
 
 After opening the port your server will be accessible from your public IP
 address. To get your public address you can simply go to any website that checks
-it for you, eg. [](https://whatsmyip.com/). Then you show your IP address for these
+it for you, eg. [whatsmyip](https://whatsmyip.com/). Then you show your IP address for these
 people who you want to connect to the server. I repeat: **you show your IP
 address**. Sounds scary, and keep it sound scary. Always be careful who you give
 the address. In networking technology mostly server invulnerability to attacks
