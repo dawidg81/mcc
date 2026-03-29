@@ -27,7 +27,7 @@
 
 using namespace std;
 
-#define VERSION "0.5.3"
+const string VERSION = "0.5.4";
 
 Logger logger;
 
@@ -563,6 +563,16 @@ void initCommands(){
 			return;
 		}
 		serverShutdown(0);
+	});
+
+	cmdHandler.registerCommand("info", [](commandContext& ctx){
+		if(ctx.args.size() > 1){
+			pack.sendMessage(ctx.sender, ctx.sender, "&eUsage: /info");
+			return;
+		}
+
+		pack.sendMessage(ctx.sender, ctx.sender, "&e============INFO==============");
+		pack.sendMessage(ctx.sender, ctx.sender, "&eRunning ccraft2 v" + VERSION);
 	});
 
 	cmdHandler.registerCommand("help", [](commandContext& ctx){
