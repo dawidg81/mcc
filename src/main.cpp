@@ -615,6 +615,7 @@ void initCommands(){
 		pack.sendMessage(ctx.sender, ctx.sender, "&e/kick [player] - kick a player");
 		pack.sendMessage(ctx.sender, ctx.sender, "&e/shutdown - stops the game");
 		pack.sendMessage(ctx.sender, ctx.sender, "&e/info - show software info");
+		pack.sendMessage(ctx.sender, ctx.sender, "&e/tp [player] - teleport to player");
 		pack.sendMessage(ctx.sender, ctx.sender, "&e/help - shows this help");
 	});
 }
