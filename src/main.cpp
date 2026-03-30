@@ -27,7 +27,7 @@
 
 using namespace std;
 
-const string VERSION = "0.6.0";
+const string VERSION = "0.7.0";
 
 Logger logger;
 
@@ -603,7 +603,21 @@ void initCommands(){
 	        }
 	    }
 	    pack.sendMessage(ctx.sender, ctx.sender, "&cPlayer `" + targetName + "` not found!");
-	});	
+	});
+
+	cmdHandler.registerCommand("save", [](commandContext& ctx){
+		if(!ctx.sender->isOP){
+			pack.sendMessage(ctx.sender, ctx.sender, "&eYou're not an op!");
+			return;
+		}
+		if(ctx.args.size() > 1){
+			pack.sendMessage(ctx.sender, ctx.sender, "&eUsage: /save");
+			return;
+		}
+		string lvlfilename = "world.lvl";
+		level.save(lvlfilename);
+		pack.sendMessage(ctx.sender, ctx.sender, "&eLevel saved to " + lvlfilename);
+	});
 
 	cmdHandler.registerCommand("help", [](commandContext& ctx){
 		if(ctx.args.size() > 1){
@@ -616,6 +630,7 @@ void initCommands(){
 		pack.sendMessage(ctx.sender, ctx.sender, "&e/shutdown - stops the game");
 		pack.sendMessage(ctx.sender, ctx.sender, "&e/info - show software info");
 		pack.sendMessage(ctx.sender, ctx.sender, "&e/tp [player] - teleport to player");
+		pack.sendMessage(ctx.sender, ctx.sender, "&e/save - saves current level");
 		pack.sendMessage(ctx.sender, ctx.sender, "&e/help - shows this help");
 	});
 }
