@@ -188,6 +188,21 @@ public:
 	}
 };
 
+class LevelRegistry {
+public:
+	mutex registryMutex;
+
+	Level* getOrLoad(const string& name, bool generate = false){}
+
+	void unloadIfEmpty(const string& name){}
+	void saveAll(){}
+	vector<string> listAvailable(){}
+
+	map<string, Level*> levels;
+};
+
+LevelRegistry levelRegistry;
+
 class Player {
 public:
 	string username;
