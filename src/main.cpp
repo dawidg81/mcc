@@ -27,7 +27,10 @@
 
 using namespace std;
 
-const string VERSION = "0.7.0";
+const string VERSION = "0.7.1";
+
+string confServerName = "ccraft Testing";
+string confServerMotd = "Welcome!";
 
 Logger logger;
 
