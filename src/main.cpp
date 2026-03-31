@@ -57,64 +57,64 @@ std::string generateSalt(int bytes = 32) {
 }
 
 string md5(const string& input){
-    static const uint32_t K[64] = {
-        0xd76aa478,0xe8c7b756,0x242070db,0xc1bdceee,0xf57c0faf,0x4787c62a,0xa8304613,0xfd469501,
-        0x698098d8,0x8b44f7af,0xffff5bb1,0x895cd7be,0x6b901122,0xfd987193,0xa679438e,0x49b40821,
-        0xf61e2562,0xc040b340,0x265e5a51,0xe9b6c7aa,0xd62f105d,0x02441453,0xd8a1e681,0xe7d3fbc8,
-        0x21e1cde6,0xc33707d6,0xf4d50d87,0x455a14ed,0xa9e3e905,0xfcefa3f8,0x676f02d9,0x8d2a4c8a,
-        0xfffa3942,0x8771f681,0x6d9d6122,0xfde5380c,0xa4beea44,0x4bdecfa9,0xf6bb4b60,0xbebfbc70,
-        0x289b7ec6,0xeaa127fa,0xd4ef3085,0x04881d05,0xd9d4d039,0xe6db99e5,0x1fa27cf8,0xc4ac5665,
-        0xf4292244,0x432aff97,0xab9423a7,0xfc93a039,0x655b59c3,0x8f0ccc92,0xffeff47d,0x85845dd1,
-        0x6fa87e4f,0xfe2ce6e0,0xa3014314,0x4e0811a1,0xf7537e82,0xbd3af235,0x2ad7d2bb,0xeb86d391
-    };
-    static const uint32_t S[64] = {
-        7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,
-        5, 9,14,20,5, 9,14,20,5, 9,14,20,5, 9,14,20,
-        4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,
-        6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21
-    };
+	static const uint32_t K[64] = {
+		0xd76aa478,0xe8c7b756,0x242070db,0xc1bdceee,0xf57c0faf,0x4787c62a,0xa8304613,0xfd469501,
+		0x698098d8,0x8b44f7af,0xffff5bb1,0x895cd7be,0x6b901122,0xfd987193,0xa679438e,0x49b40821,
+		0xf61e2562,0xc040b340,0x265e5a51,0xe9b6c7aa,0xd62f105d,0x02441453,0xd8a1e681,0xe7d3fbc8,
+		0x21e1cde6,0xc33707d6,0xf4d50d87,0x455a14ed,0xa9e3e905,0xfcefa3f8,0x676f02d9,0x8d2a4c8a,
+		0xfffa3942,0x8771f681,0x6d9d6122,0xfde5380c,0xa4beea44,0x4bdecfa9,0xf6bb4b60,0xbebfbc70,
+		0x289b7ec6,0xeaa127fa,0xd4ef3085,0x04881d05,0xd9d4d039,0xe6db99e5,0x1fa27cf8,0xc4ac5665,
+		0xf4292244,0x432aff97,0xab9423a7,0xfc93a039,0x655b59c3,0x8f0ccc92,0xffeff47d,0x85845dd1,
+		0x6fa87e4f,0xfe2ce6e0,0xa3014314,0x4e0811a1,0xf7537e82,0xbd3af235,0x2ad7d2bb,0xeb86d391
+	};
+	static const uint32_t S[64] = {
+		7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,
+		5, 9,14,20,5, 9,14,20,5, 9,14,20,5, 9,14,20,
+		4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,
+		6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21
+	};
 
-    vector<uint8_t> msg(input.begin(), input.end());
-    uint64_t bitLen = input.size() * 8;
-    msg.push_back(0x80);
-    while(msg.size() % 64 != 56) msg.push_back(0x00);
-    for(int i = 0; i < 8; i++) msg.push_back((bitLen >> (8*i)) & 0xFF);
+	vector<uint8_t> msg(input.begin(), input.end());
+	uint64_t bitLen = input.size() * 8;
+	msg.push_back(0x80);
+	while(msg.size() % 64 != 56) msg.push_back(0x00);
+	for(int i = 0; i < 8; i++) msg.push_back((bitLen >> (8*i)) & 0xFF);
 
-    uint32_t a0=0x67452301, b0=0xefcdab89, c0=0x98badcfe, d0=0x10325476;
+	uint32_t a0=0x67452301, b0=0xefcdab89, c0=0x98badcfe, d0=0x10325476;
 
-    for(size_t offset = 0; offset < msg.size(); offset += 64){
-        uint32_t M[16];
-        for(int i = 0; i < 16; i++)
-            M[i] = (uint32_t)msg[offset+i*4]
-                 | ((uint32_t)msg[offset+i*4+1] << 8)
-                 | ((uint32_t)msg[offset+i*4+2] << 16)
-                 | ((uint32_t)msg[offset+i*4+3] << 24);
+	for(size_t offset = 0; offset < msg.size(); offset += 64){
+		uint32_t M[16];
+		for(int i = 0; i < 16; i++)
+			M[i] = (uint32_t)msg[offset+i*4]
+				 | ((uint32_t)msg[offset+i*4+1] << 8)
+				 | ((uint32_t)msg[offset+i*4+2] << 16)
+				 | ((uint32_t)msg[offset+i*4+3] << 24);
 
-        uint32_t A=a0, B=b0, C=c0, D=d0;
+		uint32_t A=a0, B=b0, C=c0, D=d0;
 
-        for(int i = 0; i < 64; i++){
-            uint32_t F; int g;
-            if(i < 16)      { F=(B&C)|(~B&D);       g=i; }
-            else if(i < 32) { F=(D&B)|(~D&C);       g=(5*i+1)%16; }
-            else if(i < 48) { F=B^C^D;              g=(3*i+5)%16; }
-            else            { F=C^(B|(~D));          g=(7*i)%16; }
+		for(int i = 0; i < 64; i++){
+			uint32_t F; int g;
+			if(i < 16)      { F=(B&C)|(~B&D);       g=i; }
+			else if(i < 32) { F=(D&B)|(~D&C);       g=(5*i+1)%16; }
+			else if(i < 48) { F=B^C^D;              g=(3*i+5)%16; }
+			else            { F=C^(B|(~D));          g=(7*i)%16; }
 
-            F += A + K[i] + M[g];
-            A = D; D = C; C = B;
-            B += (F << S[i]) | (F >> (32-S[i]));
-        }
+			F += A + K[i] + M[g];
+			A = D; D = C; C = B;
+			B += (F << S[i]) | (F >> (32-S[i]));
+		}
 
-        a0+=A; b0+=B; c0+=C; d0+=D;
-    }
+		a0+=A; b0+=B; c0+=C; d0+=D;
+	}
 
-    string result;
-    for(uint32_t val : {a0, b0, c0, d0})
-        for(int i = 0; i < 4; i++){
-            uint8_t byte = (val >> (8*i)) & 0xFF;
-            result += "0123456789abcdef"[byte >> 4];
-            result += "0123456789abcdef"[byte & 0xf];
-        }
-    return result;
+	string result;
+	for(uint32_t val : {a0, b0, c0, d0})
+		for(int i = 0; i < 4; i++){
+			uint8_t byte = (val >> (8*i)) & 0xFF;
+			result += "0123456789abcdef"[byte >> 4];
+			result += "0123456789abcdef"[byte & 0xf];
+		}
+	return result;
 }
 
 std::string serverSalt = generateSalt();
@@ -227,12 +227,12 @@ public:
 	void unloadIfEmpty(const string& name){
 		if(name == "main") return;
 		lock_guard<mutex> lock(registryMutex);
-    auto it = levels.find(name);
-    if(it == levels.end()) return;
-    it->second->save("maps/" + name + ".lvl");
-    delete it->second;
-    levels.erase(it);
-    logger.info("Unloaded level: " + name);
+	auto it = levels.find(name);
+	if(it == levels.end()) return;
+	it->second->save("maps/" + name + ".lvl");
+	delete it->second;
+	levels.erase(it);
+	logger.info("Unloaded level: " + name);
 }
 
 	void saveAll(){
@@ -528,15 +528,15 @@ public:
 	}
 
 	void sendTeleport(Player* p, short x, short y, short z, uint8_t yaw, uint8_t pitch){
-	    char buf[10] = {};
-	    buf[0] = 0x08;
-	    buf[1] = (int8_t)-1;  // -1 = self
-	    buf[2] = (x >> 8) & 0xFF; buf[3] = x & 0xFF;
-	    buf[4] = (y >> 8) & 0xFF; buf[5] = y & 0xFF;
-	    buf[6] = (z >> 8) & 0xFF; buf[7] = z & 0xFF;
-	    buf[8] = yaw;
-	    buf[9] = pitch;
-	    p->enqueue(buf, 10);
+		char buf[10] = {};
+		buf[0] = 0x08;
+		buf[1] = (int8_t)-1;  // -1 = self
+		buf[2] = (x >> 8) & 0xFF; buf[3] = x & 0xFF;
+		buf[4] = (y >> 8) & 0xFF; buf[5] = y & 0xFF;
+		buf[6] = (z >> 8) & 0xFF; buf[7] = z & 0xFF;
+		buf[8] = yaw;
+		buf[9] = pitch;
+		p->enqueue(buf, 10);
 	}
 
 	void sendMessage(Player* p, Player* target, const string& msg){
@@ -599,42 +599,42 @@ private:
 CommandHandler cmdHandler;
 
 void serverShutdown(int sig){
-    logger.info("Shutting down...");
-    {
-        lock_guard<mutex> lock(playersMutex);
-        for(auto& pair : players){
-            pack.sendDisconnect(pair.second, "Game stopped");
-            pair.second->flushQueue();
-        }
-        levelRegistry.saveAll();
-    }
-    logger.info("Goodbye!");
-    exit(0);
+	logger.info("Shutting down...");
+	{
+		lock_guard<mutex> lock(playersMutex);
+		for(auto& pair : players){
+			pack.sendDisconnect(pair.second, "Game stopped");
+			pair.second->flushQueue();
+		}
+		levelRegistry.saveAll();
+	}
+	logger.info("Goodbye!");
+	exit(0);
 }
 
 vector<string> listLevelFiles() {
-    vector<string> result;
+	vector<string> result;
 #ifdef _WIN32
-    WIN32_FIND_DATAA fd;
-    HANDLE hFind = FindFirstFileA("maps\\*.lvl", &fd);
-    if (hFind == INVALID_HANDLE_VALUE) return result;
-    do {
-        string fname = fd.cFileName;
-        result.push_back(fname.substr(0, fname.size() - 4)); // strip .lvl
-    } while (FindNextFileA(hFind, &fd));
-    FindClose(hFind);
+	WIN32_FIND_DATAA fd;
+	HANDLE hFind = FindFirstFileA("maps\\*.lvl", &fd);
+	if (hFind == INVALID_HANDLE_VALUE) return result;
+	do {
+		string fname = fd.cFileName;
+		result.push_back(fname.substr(0, fname.size() - 4)); // strip .lvl
+	} while (FindNextFileA(hFind, &fd));
+	FindClose(hFind);
 #else
-    DIR* dir = opendir("maps");
-    if (!dir) return result;
-    struct dirent* entry;
-    while ((entry = readdir(dir)) != nullptr) {
-        string fname = entry->d_name;
-        if (fname.size() > 4 && fname.substr(fname.size() - 4) == ".lvl")
-            result.push_back(fname.substr(0, fname.size() - 4));
-    }
-    closedir(dir);
+	DIR* dir = opendir("maps");
+	if (!dir) return result;
+	struct dirent* entry;
+	while ((entry = readdir(dir)) != nullptr) {
+		string fname = entry->d_name;
+		if (fname.size() > 4 && fname.substr(fname.size() - 4) == ".lvl")
+			result.push_back(fname.substr(0, fname.size() - 4));
+	}
+	closedir(dir);
 #endif
-    return result;
+	return result;
 }
 
 void switchWorld(Player* player, const string& targetName){
@@ -731,21 +731,21 @@ void initCommands(){
 	});
 
 	cmdHandler.registerCommand("tp", [](commandContext& ctx){
-	    if(ctx.args.size() < 2){
-	        pack.sendMessage(ctx.sender, ctx.sender, "&eUsage: /tp [player]");
-	        return;
-	    }
-	    string targetName = ctx.args[1];
-	    lock_guard<mutex> lock(playersMutex);
-	    for(auto& pair : players){
-	        if(pair.second->username == targetName){
-	            Player* target = pair.second;
-	            pack.sendTeleport(ctx.sender, target->x, target->y, target->z, target->yaw, target->pitch);
-	            pack.sendMessage(ctx.sender, ctx.sender, "&eTeleported to " + targetName);
-	            return;
-	        }
-	    }
-	    pack.sendMessage(ctx.sender, ctx.sender, "&cPlayer `" + targetName + "` not found!");
+		if(ctx.args.size() < 2){
+			pack.sendMessage(ctx.sender, ctx.sender, "&eUsage: /tp [player]");
+			return;
+		}
+		string targetName = ctx.args[1];
+		lock_guard<mutex> lock(playersMutex);
+		for(auto& pair : players){
+			if(pair.second->username == targetName){
+				Player* target = pair.second;
+				pack.sendTeleport(ctx.sender, target->x, target->y, target->z, target->yaw, target->pitch);
+				pack.sendMessage(ctx.sender, ctx.sender, "&eTeleported to " + targetName);
+				return;
+			}
+		}
+		pack.sendMessage(ctx.sender, ctx.sender, "&cPlayer `" + targetName + "` not found!");
 	});
 
 	cmdHandler.registerCommand("save", [](commandContext& ctx){
@@ -766,117 +766,117 @@ void initCommands(){
 	});
 
 	cmdHandler.registerCommand("join", [](commandContext& ctx){
-    if (ctx.args.size() < 2) {
-        pack.sendMessage(ctx.sender, ctx.sender, "&eUsage: /join [level name]");
-        return;
-    }
-    string targetName = ctx.args[1];
-    if (targetName == ctx.sender->currentLevel) {
-        pack.sendMessage(ctx.sender, ctx.sender, "&eYou are already on that level!");
-        return;
-    }
-    switchWorld(ctx.sender, targetName);
+	if (ctx.args.size() < 2) {
+		pack.sendMessage(ctx.sender, ctx.sender, "&eUsage: /join [level name]");
+		return;
+	}
+	string targetName = ctx.args[1];
+	if (targetName == ctx.sender->currentLevel) {
+		pack.sendMessage(ctx.sender, ctx.sender, "&eYou are already on that level!");
+		return;
+	}
+	switchWorld(ctx.sender, targetName);
 });
 
 cmdHandler.registerCommand("main", [](commandContext& ctx){
-    if (ctx.sender->currentLevel == "main") {
-        pack.sendMessage(ctx.sender, ctx.sender, "&eYou are already on the main level!");
-        return;
-    }
-    switchWorld(ctx.sender, "main");
+	if (ctx.sender->currentLevel == "main") {
+		pack.sendMessage(ctx.sender, ctx.sender, "&eYou are already on the main level!");
+		return;
+	}
+	switchWorld(ctx.sender, "main");
 });
 
 cmdHandler.registerCommand("new", [](commandContext& ctx){
-    if (!ctx.sender->isOP) {
-        pack.sendMessage(ctx.sender, ctx.sender, "&eYou're not an op!");
-        return;
-    }
-    if (ctx.args.size() < 2) {
-        pack.sendMessage(ctx.sender, ctx.sender, "&eUsage: /new [level name]");
-        return;
-    }
-    string name = ctx.args[1];
-    string path = "maps/" + name + ".lvl";
+	if (!ctx.sender->isOP) {
+		pack.sendMessage(ctx.sender, ctx.sender, "&eYou're not an op!");
+		return;
+	}
+	if (ctx.args.size() < 2) {
+		pack.sendMessage(ctx.sender, ctx.sender, "&eUsage: /new [level name]");
+		return;
+	}
+	string name = ctx.args[1];
+	string path = "maps/" + name + ".lvl";
 
-    ifstream check(path);
-    if (check.good()) {
-        check.close();
-        pack.sendMessage(ctx.sender, ctx.sender, "&cLevel '" + name + "' already exists!");
-        return;
-    }
+	ifstream check(path);
+	if (check.good()) {
+		check.close();
+		pack.sendMessage(ctx.sender, ctx.sender, "&cLevel '" + name + "' already exists!");
+		return;
+	}
 
-    Level* lvl = levelRegistry.getOrLoad(name, true); // generate = true
-    if (lvl)
-        pack.sendMessage(ctx.sender, ctx.sender, "&eLevel '" + name + "' created!");
-    else
-        pack.sendMessage(ctx.sender, ctx.sender, "&cFailed to create level '" + name + "'");
+	Level* lvl = levelRegistry.getOrLoad(name, true); // generate = true
+	if (lvl)
+		pack.sendMessage(ctx.sender, ctx.sender, "&eLevel '" + name + "' created!");
+	else
+		pack.sendMessage(ctx.sender, ctx.sender, "&cFailed to create level '" + name + "'");
 });
 
 cmdHandler.registerCommand("del", [](commandContext& ctx){
-    if (!ctx.sender->isOP) {
-        pack.sendMessage(ctx.sender, ctx.sender, "&eYou're not an op!");
-        return;
-    }
-    if (ctx.args.size() < 2) {
-        pack.sendMessage(ctx.sender, ctx.sender, "&eUsage: /del [level name]");
-        return;
-    }
-    string name = ctx.args[1];
-    if (name == "main") {
-        pack.sendMessage(ctx.sender, ctx.sender, "&cCannot delete the main level!");
-        return;
-    }
+	if (!ctx.sender->isOP) {
+		pack.sendMessage(ctx.sender, ctx.sender, "&eYou're not an op!");
+		return;
+	}
+	if (ctx.args.size() < 2) {
+		pack.sendMessage(ctx.sender, ctx.sender, "&eUsage: /del [level name]");
+		return;
+	}
+	string name = ctx.args[1];
+	if (name == "main") {
+		pack.sendMessage(ctx.sender, ctx.sender, "&cCannot delete the main level!");
+		return;
+	}
 
-    // Kick all players on that level to main first
-    {
-        lock_guard<mutex> lock(playersMutex);
-        for (auto& pair : players) {
-            if (pair.second->currentLevel == name) {
-                pack.sendMessage(pair.second, pair.second, "&cThe level you were on was deleted. Sending you to main.");
-            }
-        }
-    }
-    // switchWorld must be called without playersMutex held
-    vector<Player*> toMove;
-    {
-        lock_guard<mutex> lock(playersMutex);
-        for (auto& pair : players)
-            if (pair.second->currentLevel == name)
-                toMove.push_back(pair.second);
-    }
-    for (Player* p : toMove)
-        switchWorld(p, "main");
+	// Kick all players on that level to main first
+	{
+		lock_guard<mutex> lock(playersMutex);
+		for (auto& pair : players) {
+			if (pair.second->currentLevel == name) {
+				pack.sendMessage(pair.second, pair.second, "&cThe level you were on was deleted. Sending you to main.");
+			}
+		}
+	}
+	// switchWorld must be called without playersMutex held
+	vector<Player*> toMove;
+	{
+		lock_guard<mutex> lock(playersMutex);
+		for (auto& pair : players)
+			if (pair.second->currentLevel == name)
+				toMove.push_back(pair.second);
+	}
+	for (Player* p : toMove)
+		switchWorld(p, "main");
 
-    // Unload from registry if loaded
-    {
-        lock_guard<mutex> lock(levelRegistry.registryMutex);
-        auto it = levelRegistry.levels.find(name);
-        if (it != levelRegistry.levels.end()) {
-            delete it->second;
-            levelRegistry.levels.erase(it);
-        }
-    }
+	// Unload from registry if loaded
+	{
+		lock_guard<mutex> lock(levelRegistry.registryMutex);
+		auto it = levelRegistry.levels.find(name);
+		if (it != levelRegistry.levels.end()) {
+			delete it->second;
+			levelRegistry.levels.erase(it);
+		}
+	}
 
-    // Delete the file
-    string path = "maps/" + name + ".lvl";
-    if (remove(path.c_str()) == 0)
-        pack.sendMessage(ctx.sender, ctx.sender, "&eLevel '" + name + "' deleted.");
-    else
-        pack.sendMessage(ctx.sender, ctx.sender, "&cFailed to delete level file '" + name + "'");
+	// Delete the file
+	string path = "maps/" + name + ".lvl";
+	if (remove(path.c_str()) == 0)
+		pack.sendMessage(ctx.sender, ctx.sender, "&eLevel '" + name + "' deleted.");
+	else
+		pack.sendMessage(ctx.sender, ctx.sender, "&cFailed to delete level file '" + name + "'");
 });
 
 cmdHandler.registerCommand("wlist", [](commandContext& ctx){
-    vector<string> worlds = listLevelFiles();
-    if (worlds.empty()) {
-        pack.sendMessage(ctx.sender, ctx.sender, "&eNo levels found in maps/");
-        return;
-    }
-    pack.sendMessage(ctx.sender, ctx.sender, "&e = Available Levels =");
-    for (const string& w : worlds) {
-        string line = "&e  " + w;
-        if (w == ctx.sender->currentLevel) line += " &a(you are here)";
-        pack.sendMessage(ctx.sender, ctx.sender, line);
-    }
+	vector<string> worlds = listLevelFiles();
+	if (worlds.empty()) {
+		pack.sendMessage(ctx.sender, ctx.sender, "&eNo levels found in maps/");
+		return;
+	}
+	pack.sendMessage(ctx.sender, ctx.sender, "&e = Available Levels =");
+	for (const string& w : worlds) {
+		string line = "&e  " + w;
+		if (w == ctx.sender->currentLevel) line += " &a(you are here)";
+		pack.sendMessage(ctx.sender, ctx.sender, line);
+	}
 });
 
 	cmdHandler.registerCommand("help", [](commandContext& ctx){
@@ -917,25 +917,25 @@ void handlePlayer(SOCKET clientSocket){
 	// auth checking
 	/*
 	if(player->verKey != md5(serverSalt + player->username)){
-    		char buf[65] = {};
-	    	buf[0] = 0x0e;
-	    	writeMCString(buf + 1, "Login failed!");
-	    	send(clientSocket, buf, sizeof(buf), 0);
-	    	logger.err(player->username + " failed authentication");
-	    	closesocket(clientSocket);
-	    	delete player;
-	    	return;
+			char buf[65] = {};
+			buf[0] = 0x0e;
+			writeMCString(buf + 1, "Login failed!");
+			send(clientSocket, buf, sizeof(buf), 0);
+			logger.err(player->username + " failed authentication");
+			closesocket(clientSocket);
+			delete player;
+			return;
 	}*/
 
 	if(player->isBanned){
 		char buf[65] = {};
-	    	buf[0] = 0x0e;
-	    	writeMCString(buf + 1, "Player '" + player->username + "' is blacklisted");
-	    	send(clientSocket, buf, sizeof(buf), 0);
-	    	logger.err(player->username + " tried to join but is blacklisted");
-	    	closesocket(clientSocket);
-	    	delete player;
-	    	return;
+			buf[0] = 0x0e;
+			writeMCString(buf + 1, "Player '" + player->username + "' is blacklisted");
+			send(clientSocket, buf, sizeof(buf), 0);
+			logger.err(player->username + " tried to join but is blacklisted");
+			closesocket(clientSocket);
+			delete player;
+			return;
 	}
 
 	{
@@ -957,7 +957,7 @@ void handlePlayer(SOCKET clientSocket){
 	string motd = "Welcome, " + player->username + "!";
 	char utype = player->isOP ? 0x64 : 0x00;
 	auto stopSender = make_shared<atomic<bool>>(false);
-	
+
 	{
 		lock_guard<mutex> lock(playersMutex);
 		player->id = assignId();
@@ -1063,7 +1063,7 @@ void handlePlayer(SOCKET clientSocket){
 					  Level* lvl = levelRegistry.getOrLoad(player->currentLevel);
 					  if(lvl) lvl->setBlock(bx, by, bz, newBlock);
 
-					  lock_guard<mutex> lock(playersMutex); 
+					  lock_guard<mutex> lock(playersMutex);
 					  for(auto& pair : players)
 						  if(pair.second->currentLevel == player-> currentLevel)
 							  pack.sendSetBlock(pair.second, bx, by, bz, newBlock);
@@ -1073,7 +1073,7 @@ void handlePlayer(SOCKET clientSocket){
 			case 0x08:{ // pos ort
 					  char buf[9] = {};
 					  if(!qrecvExact(buf, 9)) goto disconnect;
-					  
+
 					  player->x = (short)((uint8_t)buf[1] << 8 | (uint8_t)buf[2]);
 					  player->y = (short)((uint8_t)buf[3] << 8 | (uint8_t)buf[4]);
 					  player->z = (short)((uint8_t)buf[5] << 8 | (uint8_t)buf[6]);
@@ -1094,7 +1094,7 @@ void handlePlayer(SOCKET clientSocket){
 					  string msg; msg.assign(buf + 1, 64);
 					  msg.erase(msg.find_last_not_of(' ') + 1);
 
-					  if (cmdHandler.handle(player, msg)) break;	  
+					  if (cmdHandler.handle(player, msg)) break;
 
 					  logger.info("<" + player->username + "> " + msg);
 
@@ -1147,7 +1147,7 @@ void heartbeat(){
 			lock_guard<mutex> lock(playersMutex);
 			userCount = players.size();
 		}
-		
+
 		string serverName = "ccraft%20Testing";
 		string query =
 			"name=" + serverName +
@@ -1188,7 +1188,7 @@ if (::connect(s, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
 	::close(s);
 	this_thread::sleep_for(chrono::minutes(1));
 	continue;
-}	
+}
 
 		send(s, request.c_str(), (int)request.size(), 0);
 
