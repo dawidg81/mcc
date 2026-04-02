@@ -1171,7 +1171,7 @@ if (!he) {
 	continue;
 }
 
-int s = ::socket(AF_INET, SOCK_STREAM, 0);
+int s = ::socket(AF_INET, SOCK_STREAM, SO_REUSEADDR, 0);
 if (s < 0) {
 	logger.err("Heartbeat: socket creation failed");
 	this_thread::sleep_for(chrono::minutes(1));
@@ -1185,7 +1185,7 @@ addr.sin_addr   = *(struct in_addr*)he->h_addr;
 
 if (::connect(s, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
 	logger.err("Heartbeat: connect failed");
-	::close(s);
+	closesocket(s);
 	this_thread::sleep_for(chrono::minutes(1));
 	continue;
 }
