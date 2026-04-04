@@ -31,7 +31,7 @@
 
 using namespace std;
 
-const string VERSION = "0.10.1";
+const string VERSION = "0.10.2";
 Socket serverSocket;
 
 string confServerName = "ccraft Testing";
@@ -174,11 +174,6 @@ public:
 			}
 		}
 		file.close();
-		string levelName = filename;
-		if(levelName.substr(0, 5) == "maps/") levelName = levelName.substr(5);
-		if(levelName.size() > 4 && levelName.substr(levelName.size()-4) == ".lvl")
-			levelName = levelName.substr(0, levelName.size()-4);
-		backupLevel(levelName, filename);
 		logger.info("Level saved to " + filename);
 	}
 
@@ -1331,6 +1326,10 @@ void saveLoop(){
 	while(true){
 		this_thread::sleep_for(chrono::minutes(5));
 		levelRegistry.saveAll();
+
+		lock_guard<mutex> lock(levelRegistry.registryMutex);
+		for(auto& pair : levelRegistry.levels)
+			backupLevel(pair.first, "maps/" + pair.first + ".lvl");
 	}
 }
 

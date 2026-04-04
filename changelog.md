@@ -1,3 +1,8 @@
+# 0.10.2
+
+* Automatic level backups are now being done every 5 minutes instead of each
+minute so it doesn't flood up the disk quickly.
+
 # 0.10.1
 
 * Fixed server socket: no more `Accept failed` errors.
