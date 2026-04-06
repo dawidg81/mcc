@@ -577,12 +577,24 @@ struct commandContext {
 	vector<string> args;
 };
 
+struct CommandMeta {
+	string usage;
+	string shortDesc;
+	string desc;
+	handlerFn fn;
+}
+
 class CommandHandler {
 public:
 	using handlerFn = function<void(commandContext&)>;
 
-	void registerCommand(const string& name, handlerFn fn){
-		commands[name] = fn;
+	void registerCommand(
+			const string& name,
+			const string& usage,
+			const string& shortDesc,
+			const string& desc,
+			handlerFn fn){
+		commands[name] = {usage, shortDesc, desc, fn};
 	}
 
 	bool handle(Player* sender, const string& msg){
@@ -598,14 +610,57 @@ public:
 		string name = ctx.args[0];
 		auto it = commands.find(name);
 		if(it != commands.end()){
-			it->second(ctx);
+			it->second.fn(ctx);
 		} else {
 			pack.sendMessage(sender, sender, "&cUnknown `" + name + "`");
 		}
 		return true;
 	}
+
+void registerHelp(){
+    registerCommand("help", "/help <command>", "Show help", "Without arguments, lists all commands (paginated, 8 per page). With a command name, shows its usage and full description.", [this](commandContext& ctx){
+        const int PAGE_SIZE = 8;
+
+        if(ctx.args.size() >= 2){
+            string name = ctx.args[1];
+            auto it = commands.find(name);
+            if(it == commands.end()){
+                pack.sendMessage(ctx.sender, ctx.sender, "&cUnknown command: " + name);
+                return;
+            }
+            auto& m = it->second;
+            pack.sendMessage(ctx.sender, ctx.sender, "&e-- Help: /" + name + " --");
+            pack.sendMessage(ctx.sender, ctx.sender, "&eUsage: " + m.usage);
+            pack.sendMessage(ctx.sender, ctx.sender, "&e" + m.desc);
+            return;
+        }
+
+        int page = 1;
+        if(ctx.args.size() == 2){
+            try { page = stoi(ctx.args[1]); } catch(...) {}
+        }
+
+        vector<pair<string, CommandMeta*>> sorted;
+        for(auto& pair : commands) sorted.push_back({pair.first, &pair.second});
+        sort(sorted.begin(), sorted.end(), [](auto& a, auto& b){ return a.first < b.first; });
+
+        int totalPages = max(1, (int)((sorted.size() + PAGE_SIZE - 1) / PAGE_SIZE));
+        if(page < 1) page = 1;
+        if(page > totalPages) page = totalPages;
+
+        pack.sendMessage(ctx.sender, ctx.sender, "&e-- Commands (page " + to_string(page) + "/" + to_string(totalPages) + ") --");
+        int start = (page - 1) * PAGE_SIZE;
+        int end = min(start + PAGE_SIZE, (int)sorted.size());
+        for(int i = start; i < end; i++){
+            auto& [name, meta] = sorted[i];
+            pack.sendMessage(ctx.sender, ctx.sender, "&e/" + name + " &f- " + meta->shortDesc);
+        }
+        if(page < totalPages)
+            pack.sendMessage(ctx.sender, ctx.sender, "&eType /help " + to_string(page + 1) + " for next page");
+    });
+}
 private:
-	map<string, handlerFn> commands;
+	map<string, CommandMeta> commands;
 };
 
 CommandHandler cmdHandler;
@@ -739,7 +794,14 @@ void switchWorld(Player* player, const string& targetName){
 }
 
 void initCommands(){
-	cmdHandler.registerCommand("kick", [](commandContext& ctx){
+	//we structure the command in order: system name, usage string, short
+	//description, long description
+	cmdHandler.registerCommand(
+			"kick",
+			"/kick [player] <reason>",
+			"Kick a player",
+			"Force disconnects the given player from the server. Optionally provide a reason. OP only.",
+			[](commandContext& ctx){
 		if(!ctx.sender->isOP){
 			pack.sendMessage(ctx.sender, ctx.sender, "&eYou're not an op!");
 			return;
@@ -771,7 +833,12 @@ void initCommands(){
 		pack.sendMessage(ctx.sender, ctx.sender, "&ePlayer `" + target + "` has been not found!");
 	});
 
-	cmdHandler.registerCommand("shutdown", [](commandContext& ctx){
+	cmdHandler.registerCommand(
+			"shutdown",
+			"/shutdown",
+			"Shuts down the server",
+			"Stops the game disconnecting all players. OP only",
+			[](commandContext& ctx){
 		if(!ctx.sender->isOP){
 			pack.sendMessage(ctx.sender, ctx.sender, "&eYou're not an op!");
 			return;
@@ -783,7 +850,12 @@ void initCommands(){
 		serverShutdown(0);
 	});
 
-	cmdHandler.registerCommand("info", [](commandContext& ctx){
+	cmdHandler.registerCommand(
+			"info",
+			"/info",
+			"Shows info",
+			"Prints software version",
+			[](commandContext& ctx){
 		if(ctx.args.size() > 1){
 			pack.sendMessage(ctx.sender, ctx.sender, "&eUsage: /info");
 			return;
@@ -793,7 +865,12 @@ void initCommands(){
 		pack.sendMessage(ctx.sender, ctx.sender, "&eRunning ccraft2 v" + VERSION);
 	});
 
-	cmdHandler.registerCommand("tp", [](commandContext& ctx){
+	cmdHandler.registerCommand(
+			"tp",
+			"/tp [player]",
+			"Teleport to player",
+			"Teleports you to given player",
+			[](commandContext& ctx){
 		if(ctx.args.size() < 2){
 			pack.sendMessage(ctx.sender, ctx.sender, "&eUsage: /tp [player]");
 			return;
@@ -811,7 +888,12 @@ void initCommands(){
 		pack.sendMessage(ctx.sender, ctx.sender, "&cPlayer `" + targetName + "` not found!");
 	});
 
-	cmdHandler.registerCommand("save", [](commandContext& ctx){
+	cmdHandler.registerCommand(
+			"save",
+			"/save",
+			"Saves level",
+			"Saves current level to a file",
+			[](commandContext& ctx){
 		if(!ctx.sender->isOP){
 			pack.sendMessage(ctx.sender, ctx.sender, "&eYou're not an op!");
 			return;
@@ -828,7 +910,9 @@ void initCommands(){
 		}
 	});
 
-	cmdHandler.registerCommand("join", [](commandContext& ctx){
+	cmdHandler.registerCommand(
+			"join",
+			[](commandContext& ctx){
 	if (ctx.args.size() < 2) {
 		pack.sendMessage(ctx.sender, ctx.sender, "&eUsage: /join [level name]");
 		return;
