@@ -32,7 +32,7 @@
 
 using namespace std;
 
-const string VERSION = "0.12.0";
+const string VERSION = "0.12.1";
 Socket serverSocket;
 
 string confServerName = "ccraft Testing";
@@ -146,15 +146,17 @@ public:
 	}
 
 	void newFile(){
-		fill(blocks.begin(), blocks.end(), 0x00);
-		for(int iz=0; iz < sizeZ; iz++){
-			for(int ix=0; ix < sizeX; ix++){
-				setBlock(ix, sizeY/2 - 2, iz, 3);
-				setBlock(ix, sizeY/2 - 1, iz, 3);
-				setBlock(ix, sizeY/2, iz, 2);
-			}
-		}
-		logger.info("Generated new level to a file");
+	    fill(blocks.begin(), blocks.end(), 0x00);
+	    int groundY = sizeY / 2;
+	    for(int iz = 0; iz < sizeZ; iz++){
+	        for(int ix = 0; ix < sizeX; ix++){
+	            setBlock(ix, groundY - 2, iz, 3); // dirt
+	            setBlock(ix, groundY - 1, iz, 3); // dirt
+	            setBlock(ix, groundY,     iz, 2); // grass
+	        }
+	    }
+	    dirty = false;
+	    logger.info("Generated new level to a file");
 	}
 
 	void save(const string& filename){

@@ -1,3 +1,7 @@
+# 0.12.1
+
+* Fixed new world generation
+
 # 0.12.0
 
 * Now more advanced world file format.
