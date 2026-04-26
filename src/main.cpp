@@ -37,6 +37,7 @@
 using namespace std;
 
 LevelRegistry levelRegistry;
+Socket serverSocket;
 
 class Player {
 public:

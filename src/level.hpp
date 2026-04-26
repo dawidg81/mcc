@@ -1,3 +1,4 @@
+#include <list>
 #include "Logger.hpp"
 Logger logger;
 #pragma once
