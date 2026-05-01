@@ -43,9 +43,10 @@ using namespace std;
 LevelRegistry levelRegistry;
 Socket serverSocket;
 CommandHandler cmdHandler;
+Packet pack;
 
 std::mutex playersMutex;
-std::map<int, Player> players;
+std::map<uint8_t, Player*> players;
 
 void serverShutdown(int sig){
 	logger.info("Shutting down...");
