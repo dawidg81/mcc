@@ -560,7 +560,7 @@ void handlePlayer(SOCKET clientSocket){
 			buf[0] = 0x0e;
 			writeMCString(buf + 1, "Login failed!");
 			send(clientSocket, buf, sizeof(buf), 0);
-			logger.err(player->username + " failed authentication. Key was " + md5(serverSalt + player->username));
+			logger.err(player->username + " failed authentication. Expected " + md5(serverSalt + player->username) + " but got " + player->verKey);
 			closesocket(clientSocket);
 			delete player;
 			return;
