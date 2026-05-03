@@ -5,6 +5,7 @@
 #include <vector>
 #include <fstream>
 #include <random>
+#include <atomic>
 #include "Logger.hpp"
 #include "logger_instance.hpp"
 #include "player.hpp"
