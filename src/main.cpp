@@ -43,9 +43,10 @@ using namespace std;
 LevelRegistry levelRegistry;
 Socket serverSocket;
 CommandHandler cmdHandler;
+Packet pack;
 
-/*std::mutex playersMutex;
-std::map<int, Player> players;*/
+std::mutex playersMutex;
+std::map<uint8_t, Player*> players;
 
 void serverShutdown(int sig){
 	logger.info("Shutting down...");
@@ -559,7 +560,7 @@ void handlePlayer(SOCKET clientSocket){
 			buf[0] = 0x0e;
 			writeMCString(buf + 1, "Login failed!");
 			send(clientSocket, buf, sizeof(buf), 0);
-			logger.err(player->username + " failed authentication. Key was " + md5(serverSalt + player->username));
+			logger.err(player->username + " failed authentication. Expected " + md5(serverSalt + player->username) + " but got " + player->verKey);
 			closesocket(clientSocket);
 			delete player;
 			return;

@@ -518,10 +518,6 @@ public:
 // util
 vector<string> listLevelFiles();
 
-void backupLevel(const string& name, const string& path);
-
-int getLatestBackup(const string& name);
-
 /*
 void switchWorld(Player* player, const string& targetName){
 	Level* targetLevel = levelRegistry.getOrLoad(targetName);

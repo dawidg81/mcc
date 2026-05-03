@@ -43,7 +43,7 @@ public:
         if(it != commands.end()){
             it->second.fn(ctx);
         } else {
-            pack.sendMessage(sender, sender, "&cUnknown `" + name + "`");
+            pack.sendMessage(sender, sender, "&cUnknown command `" + name + "`");
         }
         return true;
     }
